@@ -49,7 +49,9 @@ public class PlayService extends Service {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 index++;
-                nextSong(index);
+                if(index < mArrayList.size()){
+                    nextSong(index);
+                }
             }
         };
 
