@@ -1,57 +1,56 @@
 package com.uyenpham.diploma.demoservice;
 
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private ArrayList<Integer> mArrayList = new ArrayList<>();
-    private MediaPlayer mediaPlayer;
-    private int index =0;
-    private MediaPlayer.OnCompletionListener  listener;
+    private ArrayList<Song> mArrayList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mediaPlayer = new MediaPlayer();
-        initCompleteCallback();
         listRaw();
-        nextSong(index);
+        startService();
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, SecondActivity.class));
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.i("Current song ", "onDestroy");
+        stopService(new Intent(MainActivity.this, PlayService.class));
+        super.onDestroy();
     }
 
     public void listRaw() {
         Field[] fields = R.raw.class.getFields();
         for (int count = 0; count < fields.length; count++) {
-            Log.i("Raw Asset: ", fields[count].getName());
             int resourceID = 0;
             try {
                 resourceID = fields[count].getInt(fields[count]);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-            mArrayList.add(resourceID);
+            mArrayList.add(new Song(fields[count].getName(),resourceID));
         }
     }
-
-    private void initCompleteCallback() {
-        listener = new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                index++;
-                nextSong(index);
-            }
-        };
-
-    }
-
-    private void nextSong(int i) {
-        mediaPlayer = MediaPlayer.create(this, mArrayList.get(i));
-        mediaPlayer.start();
-        mediaPlayer.setOnCompletionListener(listener);
+    private void startService(){
+        Intent intent = new Intent(MainActivity.this, PlayService.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("list", mArrayList);
+        intent.putExtra("bundle", bundle);
+        startService(intent);
     }
 }
