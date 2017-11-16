@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void startService(){
         Intent intent = new Intent(MainActivity.this, PlayService.class);
+        intent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
         Bundle bundle = new Bundle();
         bundle.putSerializable("list", mArrayList);
         intent.putExtra("bundle", bundle);
